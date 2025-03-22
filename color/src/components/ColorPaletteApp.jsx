@@ -6,6 +6,7 @@ export default function ColorPaletteApp() {
   const [palettes, setPalettes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedTag, setSelectedTag] = useState(null);
 
   useEffect(() => {
     fetchPalettes();
@@ -33,8 +34,16 @@ export default function ColorPaletteApp() {
     alert(`Copied: ${color}`);
   };
 
+  const handleTagClick = (tag) => {
+    setSelectedTag(tag === selectedTag ? null : tag);
+  };
+
+  const filteredPalettes = selectedTag
+    ? palettes.filter((palette) => palette.tags.includes(selectedTag))
+    : palettes;
+
   return (
-    <div className="min-h-screen bg-gray-100 items-center p-4">
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4">
         <div className="mx-auto container">
 
        
@@ -48,11 +57,24 @@ export default function ColorPaletteApp() {
       />
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 ">
-        {palettes.map((palette) => (
+      <div className="flex flex-wrap gap-2 mb-4">
+        {Array.from(new Set(palettes.flatMap((p) => p.tags))).map((tag) => (
+          <button
+            key={tag}
+            className={`px-3 py-1 rounded-md text-sm ${
+              selectedTag === tag ? "bg-blue-500 text-white" : "bg-gray-200"
+            }`}
+            onClick={() => handleTagClick(tag)}
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {filteredPalettes.map((palette) => (
           <div key={palette.id} className="bg-white p-4 shadow-md rounded-lg">
             <h2 className="text-lg font-semibold mb-2">{palette.text}</h2>
-            <div className="flex flex-col  rounded overflow-hidden">
+            <div className="flex flex-col border rounded overflow-hidden">
               {palette.colors.map((color, index) => (
                 <div
                   key={color}
@@ -60,7 +82,7 @@ export default function ColorPaletteApp() {
                   style={{ backgroundColor: color }}
                   onClick={() => copyToClipboard(color)}
                 >
-                  <span className="absolute inset-0 flex items-center justify-center  bg-opacity-25 text-xs px-2 py-1 rounded">{palette.tags[index] || ""}</span>
+                  <span className="absolute inset-0 flex items-center justify-center text-xs px-2 py-1 rounded">{palette.tags[index] || ""}</span>
                 </div>
               ))}
             </div>
